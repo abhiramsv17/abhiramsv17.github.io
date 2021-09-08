@@ -1,86 +1,89 @@
-const cellElements = document.querySelectorAll('[data-cell]')
-const winningMessage = document.getElementById('winningMessage');
-const winningMessageText = document.querySelector('[data-winning-message-text]');
-const restartBtn = document.getElementById('restartButton');
-const board = document.getElementById('board');
-let isCircleTurn = false;
-const X_CLASS = 'x';
+const X_CLASS = 'x'
 const CIRCLE_CLASS = 'circle'
-let currentClass = X_CLASS;
 const WINNING_COMBINATIONS = [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
-];
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6]
+]
+const cellElements = document.querySelectorAll('[data-cell]')
+const board = document.getElementById('board')
+const winningMessageElement = document.getElementById('winningMessage')
+const restartButton = document.getElementById('restartButton')
+const winningMessageTextElement = document.querySelector('[data-winning-message-text]')
+let circleTurn
 
-cellElements.forEach(cell => {
-    cell.addEventListener('click', handelClick, {once: true})
-})
-setHoverBoardClass();
+startGame()
 
-function setHoverBoardClass() {
-    if( isCircleTurn ) {
-        board.classList.add(CIRCLE_CLASS);
-        board.classList.remove(X_CLASS);
-    } else {
-        board.classList.add(X_CLASS);
-        board.classList.remove(CIRCLE_CLASS);
-    }
+restartButton.addEventListener('click', startGame)
+
+function startGame() {
+  circleTurn = false
+  cellElements.forEach(cell => {
+    cell.classList.remove(X_CLASS)
+    cell.classList.remove(CIRCLE_CLASS)
+    cell.removeEventListener('click', handleClick)
+    cell.addEventListener('click', handleClick, { once: true })
+  })
+  setBoardHoverClass()
+  winningMessageElement.classList.remove('show')
 }
 
-restartBtn.addEventListener('click', restartGame);
-
-function restartGame() {
-    winningMessage.classList.remove('show');
-    // cellElements.
+function handleClick(e) {
+  const cell = e.target
+  const currentClass = circleTurn ? CIRCLE_CLASS : X_CLASS
+  placeMark(cell, currentClass)
+  if (checkWin(currentClass)) {
+    endGame(false)
+  } else if (isDraw()) {
+    endGame(true)
+  } else {
+    swapTurns()
+    setBoardHoverClass()
+  }
 }
 
-function handelClick(e){
-    // console.log("clicked");
-    // add 'X' or 'circle' class
-    let cell = e.target;
-    if (isCircleTurn === true) {
-        currentClass = CIRCLE_CLASS;
-    } else {
-        currentClass = X_CLASS;
-    }
-    cell.classList.add(currentClass);
-    // Draw or win
-    const isAllCellsFilled = isCellsFilled();
-    console.log(isAllCellsFilled)
+function endGame(draw) {
+  if (draw) {
+    winningMessageTextElement.innerText = 'Draw!'
+  } else {
+    winningMessageTextElement.innerText = `${circleTurn ? "O" : "X"} Wins!`
+  }
+  winningMessageElement.classList.add('show')
+}
 
-    if(checkWin(currentClass)) {
-        winningMessage.classList.add('show');
-        const msg = currentClass === X_CLASS ? 'X Wins!' : 'O Wins'
-        winningMessageText.textContent = msg;
-        console.log(currentClass);
-    } else {
-        if(isAllCellsFilled) {
-            winningMessage.classList.add('show');
-            winningMessageText.textContent = "It's A DRAW!!"
-        }
-    }
+function isDraw() {
+  return [...cellElements].every(cell => {
+    return cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS)
+  })
+}
 
-    // swap player
-    isCircleTurn = !isCircleTurn;
-    setHoverBoardClass();
+function placeMark(cell, currentClass) {
+  cell.classList.add(currentClass)
+}
+
+function swapTurns() {
+  circleTurn = !circleTurn
+}
+
+function setBoardHoverClass() {
+  board.classList.remove(X_CLASS)
+  board.classList.remove(CIRCLE_CLASS)
+  if (circleTurn) {
+    board.classList.add(CIRCLE_CLASS)
+  } else {
+    board.classList.add(X_CLASS)
+  }
 }
 
 function checkWin(currentClass) {
-    return WINNING_COMBINATIONS.some(combination => {
-        return combination.every(index => {
-            return cellElements[index].classList.contains(currentClass)
-        })
+  return WINNING_COMBINATIONS.some(combination => {
+    return combination.every(index => {
+      return cellElements[index].classList.contains(currentClass)
     })
-}
-
-function isCellsFilled() {
-    return [...cellElements].every(cell => {
-        return cell.classList.contains('x') || cell.classList.contains('circle')
-    })
+  })
 }
