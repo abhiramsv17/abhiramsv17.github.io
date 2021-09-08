@@ -54,7 +54,7 @@ function handelClick(e){
     const isAllCellsFilled = isCellsFilled();
     console.log(isAllCellsFilled)
 
-    if(checkWin(currentClass)) {c
+    if(checkWin(currentClass)) {
         winningMessage.classList.add('show');
         const msg = currentClass === X_CLASS ? 'X Wins!' : 'O Wins'
         winningMessageText.textContent = msg;
